@@ -1,8 +1,9 @@
 const fetch = require('node-fetch')
 
-// TODO: Move to env variables.
-const BASE_URL = 'https://echo-serv.tbxnet.com'
-const AUTH_HEADER = 'Bearer aSuperSecretKey'
+const BASE_URL = process.env.BASE_URL || ''
+const AUTH_HEADER = process.env.API_KEY
+  ? `Bearer ${process.env.API_KEY}`
+  : undefined
 const HEADERS = { Authorization: AUTH_HEADER }
 
 const HEX_RE = /^[0-9a-f]{32}$/i
