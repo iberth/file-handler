@@ -1,15 +1,9 @@
-const fetch = require('node-fetch')
-
-const BASE_URL = process.env.BASE_URL || ''
-const AUTH_HEADER = process.env.API_KEY
-  ? `Bearer ${process.env.API_KEY}`
-  : undefined
-const HEADERS = { Authorization: AUTH_HEADER }
+const secretClient = require('../clients/secret.client')
 
 const HEX_RE = /^[0-9a-f]{32}$/i
 const INT_RE = /^-?\d+$/
 
-const parseCSV = (rawText, fileName) => {
+const parseCSV = (rawText) => {
   const lines = rawText.split('\n')
   const rows = []
 
@@ -34,17 +28,17 @@ const parseCSV = (rawText, fileName) => {
   return rows
 }
 
+const getFileList = async () => {
+  return secretClient.getFiles()
+}
+
 const fetchFileData = async (fileName) => {
   try {
-    const res = await fetch(
-      `${BASE_URL}/v1/secret/file/${encodeURIComponent(fileName)}`,
-      { headers: HEADERS },
-    )
+    const rawText = await secretClient.getFile(fileName)
 
-    if (!res.ok) return null
+    if (!rawText) return null
 
-    const text = await res.text()
-    const lines = parseCSV(text, fileName)
+    const lines = parseCSV(rawText)
 
     if (lines.length === 0) return null
 
@@ -52,16 +46,6 @@ const fetchFileData = async (fileName) => {
   } catch {
     return null
   }
-}
-
-const getFileList = async () => {
-  const res = await fetch(`${BASE_URL}/v1/secret/files`, { headers: HEADERS })
-
-  if (!res.ok) throw new Error(`File list fetch failed: ${res.status}`)
-
-  const data = await res.json()
-
-  return data
 }
 
 const getAllFilesData = async (filterName) => {
